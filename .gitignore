@@ -1,0 +1,25 @@
+# Herramientas del agente - no son parte del bot
+skills/
+Scrapling/
+
+# Node
+node_modules/
+dist/
+playwright-report/
+test-results/
+
+# Python (por si el híbrido)
+__pycache__/
+.venv/
+*.pyc
+
+# Secretos - NUNCA commitear
+.env
+.env.local
+
+# Artefactos del bot
+screenshots/
+.output/
+*.png.tmp
+report.json
+report.html

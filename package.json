@@ -1,0 +1,32 @@
+{
+  "name": "ui-slop-bot",
+  "version": "0.1.0",
+  "description": "Auditor visual de UI Slop — píxeles renderizados + visión, supera análisis estático tipo impeccable",
+  "type": "module",
+  "bin": {
+    "ui-slop-bot": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "audit": "tsx src/cli.ts audit",
+    "audit:notebook": "tsx src/cli.ts audit --url http://localhost:3000 --provider gemini",
+    "audit:desktop": "tsx src/cli.ts audit --url http://localhost:3000 --provider ollama --model qwen2.5vl:7b",
+    "setup:windows": "powershell -ExecutionPolicy Bypass -File scripts/setup-windows.ps1",
+    "postinstall": "playwright install chromium"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "commander": "^12.1.0",
+    "playwright": "^1.63.0",
+    "sharp": "^0.34.0",
+    "yaml": "^2.6.0",
+    "zod": "^3.23.8",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.0"
+  }
+}

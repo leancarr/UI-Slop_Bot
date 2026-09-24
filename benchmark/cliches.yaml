@@ -1,0 +1,54 @@
+# Benchmark 10 Clichés de IA — v0.1
+# weight: 1-10, usado para Slop Score ponderado
+version: 0.1
+cliches:
+  - id: purple-gradient
+    weight: 8
+    label: Gradiente/destello violeta sin marca
+    signals: ["from-violet-500", "to-indigo-600", "radial glow", "mesh gradient hero"]
+    legit_exception: Marca violeta real en logo/paleta documentada
+  - id: pricing-popular
+    weight: 9
+    label: 3 cards pricing con central flotante + badge Popular
+    signals: ["3 columnas iguales", "middle scale-105", "badge Popular/Most popular"]
+    legit_exception: Pricing real con diferenciación funcional
+  - id: empty-hero
+    weight: 7
+    label: Hero monótono + espacio negativo muerto
+    signals: ["h1 centrado genérico", "sin producto visible", "CTA doble idéntico"]
+    legit_exception: Minimalismo con jerarquía tipográfica real (Linear/Stripe)
+  - id: generic-copy
+    weight: 8
+    label: Copy corporativo vacío
+    signals: ["Empower your workflow", "Unlock your potential", "The future is here", "Supercharge"]
+    legit_exception: Propuesta de valor concreta con números
+  - id: glass-abuse
+    weight: 7
+    label: Glassmorphism abusivo
+    signals: ["backdrop-blur-xl + bg-white/70", "capas translúcidas superpuestas", "baja legibilidad"]
+    legit_exception: Un solo panel glass con contraste AA
+  - id: rounded-everywhere
+    weight: 5
+    label: Rounded extremo everywhere
+    signals: ["rounded-2xl en todo", "rounded-full en cards", "sin radio sistemático"]
+    legit_exception: Sistema de radios coherente (4/8/16)
+  - id: shadow-soup
+    weight: 5
+    label: Sombras gratuitas
+    signals: ["shadow-xl everywhere", "shadow-zinc-200/50", "profundidad sin elevación real"]
+    legit_exception: Elevación jerárquica (modal > card)
+  - id: slow-anim
+    weight: 4
+    label: Animaciones entrada lentas 700ms
+    signals: ["fade/slide 700ms en todo", "stagger sin propósito", "cansa al 3er uso"]
+    legit_exception: Transición <200ms funcional
+  - id: low-contrast
+    weight: 9
+    label: Baja legibilidad por opacidad
+    signals: ["text-*/70 sobre gradiente", "opacity-50 en body", "contraste <4.5:1"]
+    legit_exception: Texto decorativo no esencial
+  - id: no-states
+    weight: 6
+    label: Sin estados reales (todo happy path)
+    signals: ["sin empty/error/loading", "skeletons eternos", "sin validación visible"]
+    legit_exception: N/A (siempre penaliza si falta)
