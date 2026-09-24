@@ -74,11 +74,13 @@ export async function auditWithGemini(opts: {
   const m = text.match(/\{[\s\S]*\}/);
   if (!m) throw new Error("Gemini sin JSON: " + text.slice(0, 300));
   const json = JSON.parse(m[0]) as { score?: number };
+  void json; // score se usa abajo
   const parsed = Report.passthrough().safeParse({
     url: opts.url, model: used,
     viewports: opts.shots.map((s) => s.viewport),
-    verdict: verdictFor(json.score ?? 0),
+    score: Number(json.score ?? 0),
     ...json,
+    verdict: verdictFor(Number(json.score ?? 0)),
   });
   if (!parsed.success) throw new Error("Schema inválido del modelo: " + JSON.stringify(parsed.error.issues).slice(0, 1000));
   return parsed.data;

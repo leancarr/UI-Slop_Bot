@@ -79,6 +79,22 @@ bash scripts/loop-audit.sh http://localhost:3000 600 18  # cada 10 min, 18 inten
 `skill/SKILL.md` es un wrapper: no reimplementa nada, corre el CLI y resume
 `.output/report.json` (score, top 3 issues con fix, link al HTML).
 
+## Ejemplo real (fitt-app, 2026-09-24)
+
+```bash
+pnpm audit:notebook
+# [1/3] capturando http://localhost:3000 ...
+# [2/3] visión (gemini) ...
+# [gemini] gemini-3.6-flash → 429 ... fallback → gemini-3.1-flash-lite OK
+# [3/3] score 65
+# → .output/report.html + .output/report.json
+```
+
+`report.json`: `score 65`, `verdict High AI Slop`, 3 issues —
+`rounded-everywhere` (medium, 1440), `low-contrast` (medium, 1440),
+`no-states` (high, 375: un ENOTFOUND crudo llega al usuario).
+Cada issue trae `evidence` (1 frase) y `fix` (1 acción concreta).
+
 ## Troubleshooting
 
 | Síntoma | Causa | Fix |
