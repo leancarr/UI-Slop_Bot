@@ -1,7 +1,24 @@
 import { chromium, type Browser } from "playwright";
-import { writeFile, mkdir } from "node:fs/promises";
+import { writeFile, mkdir, readdir } from "node:fs/promises";
 import path from "node:path";
+import os from "node:os";
 import sharp from "sharp";
+
+// Resuelve un Chromium ya instalado (útil si la versión de playwright
+// pide un build aún no descargado). Acepta override por env.
+async function resolveExecutable(): Promise<string | undefined> {
+  if (process.env.PLAYWRIGHT_EXECUTABLE) return process.env.PLAYWRIGHT_EXECUTABLE;
+  try {
+    const dir = path.join(os.homedir(), ".cache", "ms-playwright");
+    const entries = await readdir(dir);
+    const cands = entries.filter((e) => e.startsWith("chromium-")).sort().reverse();
+    for (const c of cands) {
+      const p = path.join(dir, c, "chrome-linux64", "chrome");
+      try { await import("node:fs/promises").then((m) => m.access(p)); return p; } catch { /* siguiente */ }
+    }
+  } catch { /* sin cache, usar default */ }
+  return undefined;
+}
 
 export const VIEWPORTS = [
   { width: 375, height: 812, label: "375" },
@@ -21,7 +38,14 @@ export interface CaptureResult {
 
 export async function capture(url: string, outDir = ".output"): Promise<CaptureResult> {
   await mkdir(outDir, { recursive: true });
-  const browser: Browser = await chromium.launch({ headless: true });
+  let browser: Browser;
+  try {
+    browser = await chromium.launch({ headless: true });
+  } catch {
+    const exe = await resolveExecutable();
+    if (!exe) throw new Error("Sin Chromium: corre `pnpm exec playwright install chromium`");
+    browser = await chromium.launch({ headless: true, executablePath: exe });
+  }
   const screenshots: CaptureResult["screenshots"] = [];
   let context: CaptureResult["context"] | null = null;
 

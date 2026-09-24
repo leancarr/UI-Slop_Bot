@@ -16,7 +16,6 @@
     "postinstall": "playwright install chromium"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
     "commander": "^12.1.0",
     "playwright": "^1.63.0",
     "sharp": "^0.34.0",

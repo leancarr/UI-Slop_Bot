@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Report, verdictFor } from "../schema.js";
 
-// Adaptador Gemini (notebook). Modelo default barato con visión.
+// Adaptador Gemini (notebook). REST directo: el SDK @google/generative-ai
+// quedó incompatible con los modelos nuevos (503). Default vigente 2026.
 export async function auditWithGemini(opts: {
   shots: { viewport: string; file: string }[];
   context: unknown;
@@ -11,25 +11,29 @@ export async function auditWithGemini(opts: {
 }): Promise<Record<string, unknown>> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("Falta GEMINI_API_KEY en .env");
-  const modelName = opts.model ?? "gemini-2.0-flash";
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: modelName, generationConfig: { responseMimeType: "application/json" } });
+  const modelName = opts.model ?? "gemini-3.6-flash";
 
   const rubric = await readFile("benchmark/cliches.yaml", "utf8");
   const parts: unknown[] = [
     { text: SYSTEM_PROMPT + "\n\n## RUBRICA\n" + rubric + "\n\n## CONTEXTO COMPUTADO\n" + JSON.stringify(opts.context).slice(0, 4000) },
   ];
   for (const s of opts.shots) {
-    const b64 = (await readFile(s.file)).toString("base64");
     parts.push({ text: `VIEWPORT ${s.viewport}:` });
-    parts.push({ inlineData: { data: b64, mimeType: "image/png" } });
+    parts.push({ inlineData: { mimeType: "image/png", data: (await readFile(s.file)).toString("base64") } });
   }
   parts.push({ text: RESPONSE_SHAPE });
 
-  const res = await model.generateContent(parts as never[]);
-  const text = res.response.text();
-  const json = JSON.parse(text);
-  // score ponderado simple si el modelo no lo calcula: contar highs
+  const r = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+    { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseMimeType: "application/json" } }) }
+  );
+  if (!r.ok) throw new Error(`Gemini ${r.status}: ${(await r.text()).slice(0, 400)}`);
+  const j = (await r.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+  const text = (j.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("");
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error("Gemini sin JSON: " + text.slice(0, 300));
+  const json = JSON.parse(m[0]);
   const parsed = Report.passthrough().safeParse({
     url: opts.url, model: modelName,
     viewports: opts.shots.map((s) => s.viewport),
